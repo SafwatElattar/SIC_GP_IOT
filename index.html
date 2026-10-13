@@ -518,5 +518,124 @@ live/{patientId}              same payload as iot/current (optional, one node pe
 <div id="modal-root"></div>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 <script src="app.js"></script>
+
+<!-- =====================================================================
+     MQTT BRIDGE  (ADDED BLOCK - nothing else in this file was changed)
+     Subscribes to the sensor topic over MQTT (WebSockets) and hands every
+     reading to the dashboard through the node it already reads: iot/current
+     ===================================================================== -->
+<script>
+(function () {
+  // ---------- settings ----------
+  var MQTT_HOST  = "broker.hivemq.com";        // same broker as the Pi and ESP32
+  var MQTT_PORT  = (location.protocol === "https:") ? 8884 : 8000;  // wss on https pages, ws otherwise
+  var MQTT_PATH  = "/mqtt";
+  var MQTT_TOPIC = "pulsecare/iot/current";    // same topic the Pi / ESP32 publish to
+  var USE_SSL    = (location.protocol === "https:");
+  var FIREBASE_NODE = "iot/current";           // node the dashboard already listens to
+
+  // ---------- state exposed for debugging / other scripts ----------
+  var bridge = window.PulseCareMQTT = { status: "connecting", latest: null, lastAt: 0, writes: 0 };
+  var pending = null, warned = false, client = null, retryTimer = null;
+
+  function log() { try { console.log.apply(console, ["[PulseCare MQTT]"].concat([].slice.call(arguments))); } catch (e) {} }
+
+  // ---------- parse and clean the incoming payload ----------
+  function clean(raw) {
+    var d;
+    try { d = JSON.parse(raw); } catch (e) { log("Ignored non-JSON message"); return null; }
+    if (!d || typeof d !== "object") return null;
+    var out = {};
+    var hr = Number(d.heart_rate), t = Number(d.temperature), sp = Number(d.spo2);
+    if (d.heart_rate !== null && d.heart_rate !== undefined && isFinite(hr)) out.heart_rate = hr;
+    if (d.temperature !== null && d.temperature !== undefined && isFinite(t)) out.temperature = t;
+    if (d.spo2 !== null && d.spo2 !== undefined && isFinite(sp)) out.spo2 = sp;
+    out.is_wearing = (d.is_wearing === true || d.is_wearing === "true" || d.is_wearing === 1);
+    // The dashboard needs a real wall-clock time (epoch ms). Devices that send
+    // uptime (e.g. ESP32 millis()) get stamped with the arrival time instead.
+    var ts = Number(d.timestamp);
+    out.timestamp = (isFinite(ts) && ts > 1.5e12) ? ts : Date.now();
+    return out;
+  }
+
+  // ---------- hand the reading to the dashboard via Firebase iot/current ----------
+  function getDb() {
+    try {
+      if (window.firebase && firebase.apps && firebase.apps.length) return firebase.database();
+    } catch (e) {}
+    return null;
+  }
+
+  function deliver(data) {
+    bridge.latest = data;
+    bridge.lastAt = Date.now();
+    try { window.dispatchEvent(new CustomEvent("pulsecare:mqtt", { detail: data })); } catch (e) {}
+
+    var db = getDb();
+    if (!db) {
+      pending = data;
+      if (!warned) {
+        warned = true;
+        log("Firebase is not initialised yet (Demo mode, or app.js still starting). Reading kept in window.PulseCareMQTT.latest");
+      }
+      return;
+    }
+    warned = false;
+    pending = null;
+    db.ref(FIREBASE_NODE).set(data).then(function () {
+      bridge.writes++;
+    }).catch(function (err) {
+      log("Firebase write failed:", err && err.message ? err.message : err);
+    });
+  }
+
+  // ---------- MQTT connection ----------
+  function scheduleReconnect() {
+    if (retryTimer) return;
+    retryTimer = setTimeout(function () { retryTimer = null; connect(); }, 3000);
+  }
+
+  function connect() {
+    var clientId = "pulsecare-web-" + Math.random().toString(16).slice(2, 10);
+    client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, MQTT_PATH, clientId);
+
+    client.onConnectionLost = function (resp) {
+      bridge.status = "disconnected";
+      log("Connection lost", resp && resp.errorMessage ? resp.errorMessage : "");
+      scheduleReconnect();
+    };
+
+    client.onMessageArrived = function (msg) {
+      var data = clean(msg.payloadString);
+      if (data) deliver(data);
+    };
+
+    client.connect({
+      useSSL: USE_SSL,
+      timeout: 8,
+      keepAliveInterval: 30,
+      cleanSession: true,
+      onSuccess: function () {
+        bridge.status = "connected";
+        log("Connected to " + MQTT_HOST + ":" + MQTT_PORT + ", subscribing to " + MQTT_TOPIC);
+        client.subscribe(MQTT_TOPIC, { qos: 0 });
+      },
+      onFailure: function (err) {
+        bridge.status = "failed";
+        log("Connect failed:", err && err.errorMessage ? err.errorMessage : err);
+        scheduleReconnect();
+      }
+    });
+  }
+
+  // if Firebase finished starting after the first message arrived, flush it
+  setInterval(function () { if (pending && getDb()) deliver(pending); }, 2000);
+
+  if (window.Paho && Paho.MQTT) connect();
+  else log("Paho MQTT library did not load (check internet access / CDN).");
+})();
+</script>
+<!-- ===================== END OF ADDED MQTT BLOCK ===================== -->
+
 </body>
 </html>
