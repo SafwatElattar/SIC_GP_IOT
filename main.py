@@ -5,7 +5,14 @@ from PIL import Image, ImageDraw, ImageFont
 from adafruit_rgb_display import st7735
 from max30102 import MAX30102
 import hrcalc
+import json
+import random
+import paho.mqtt.client as mqtt
 
+MQTT_BROKER = "broker.hivemq.com"      
+MQTT_PORT = 1883
+MQTT_TOPIC = "pulsecare/iot/current"   
+MQTT_INTERVAL = 2                      
 LED_PIN = 22
 TOUCH_PIN = 17
 BUZZER_PIN = 27
@@ -140,25 +147,15 @@ for t in (temp_thread, hr_thread, led_thread):
 
 
 # =====================================================================
-#  MQTT  (ADDED BLOCK - nothing above or below this block was changed)
+#  MQTT client to publish the current values to the PulseCare dashboard
 #  Publishes the values already stored in `state` to the PulseCare
-#  dashboard using the same topic and JSON schema as the ESP32 example.
 # =====================================================================
-import json
-import random
-import paho.mqtt.client as mqtt
 
-MQTT_BROKER = "broker.hivemq.com"      # same broker as the ESP32 example
-MQTT_PORT = 1883
-MQTT_TOPIC = "pulsecare/iot/current"   # topic watched by the dashboard
-MQTT_INTERVAL = 2                      # seconds between publishes
 
 _mqtt_id = "RPiPulseCare-%04x" % random.randint(0, 0xFFFF)
 try:
-    # paho-mqtt 2.x
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=_mqtt_id)
 except AttributeError:
-    # paho-mqtt 1.x
     mqtt_client = mqtt.Client(client_id=_mqtt_id)
 
 
