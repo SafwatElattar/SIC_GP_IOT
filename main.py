@@ -139,6 +139,69 @@ for t in (temp_thread, hr_thread, led_thread):
     threading.Thread(target=t, daemon=True).start()
 
 
+# =====================================================================
+#  MQTT  (ADDED BLOCK - nothing above or below this block was changed)
+#  Publishes the values already stored in `state` to the PulseCare
+#  dashboard using the same topic and JSON schema as the ESP32 example.
+# =====================================================================
+import json
+import random
+import paho.mqtt.client as mqtt
+
+MQTT_BROKER = "broker.hivemq.com"      # same broker as the ESP32 example
+MQTT_PORT = 1883
+MQTT_TOPIC = "pulsecare/iot/current"   # topic watched by the dashboard
+MQTT_INTERVAL = 2                      # seconds between publishes
+
+_mqtt_id = "RPiPulseCare-%04x" % random.randint(0, 0xFFFF)
+try:
+    # paho-mqtt 2.x
+    mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=_mqtt_id)
+except AttributeError:
+    # paho-mqtt 1.x
+    mqtt_client = mqtt.Client(client_id=_mqtt_id)
+
+
+def on_mqtt_connect(client, userdata, flags, rc, *extra):
+    print("MQTT connected (rc=%s)" % rc)
+
+
+def on_mqtt_disconnect(client, userdata, *args):
+    print("MQTT disconnected, will retry automatically")
+
+
+mqtt_client.on_connect = on_mqtt_connect
+mqtt_client.on_disconnect = on_mqtt_disconnect
+mqtt_client.reconnect_delay_set(min_delay=1, max_delay=30)
+mqtt_client.connect_async(MQTT_BROKER, MQTT_PORT, keepalive=30)  # never blocks or crashes if offline
+mqtt_client.loop_start()
+
+
+def mqtt_thread():
+    while True:
+        time.sleep(MQTT_INTERVAL)
+        finger = state["finger"]
+        # finger is on but BPM / SpO2 are still being measured (about 10 s):
+        # skip, so the dashboard does not see a false 0 BPM alarm
+        if finger and (not state["bpm"] or not state["spo2"]):
+            continue
+        temp = state["temp"]
+        payload = {
+            "heart_rate": int(state["bpm"]) if finger else 0,
+            "temperature": round(temp, 1) if temp is not None else None,
+            "spo2": int(state["spo2"]) if finger else 0,
+            "is_wearing": bool(finger),
+            "timestamp": int(time.time() * 1000),   # epoch milliseconds
+        }
+        if mqtt_client.is_connected():
+            mqtt_client.publish(MQTT_TOPIC, json.dumps(payload), qos=0)
+            print("MQTT ->", payload)
+
+
+threading.Thread(target=mqtt_thread, daemon=True).start()
+# ===================== END OF ADDED MQTT BLOCK =======================
+
+
 def center(d, y, text, font, fill):
     w = d.textlength(text, font=font)
     d.text(((128 - w) / 2, y), text, font=font, fill=fill)
