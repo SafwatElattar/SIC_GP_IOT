@@ -1,0 +1,5 @@
+# Runtime and training dependencies tested with Python 3.13.
+numpy==2.2.6
+pandas==3.0.2
+scikit-learn==1.8.0
+joblib==1.5.3

@@ -1,0 +1,7 @@
+{
+  "device_id": "pi-01",
+  "timestamp": "REPLACE_WITH_CURRENT_UTC_ISO8601",
+  "mode": "physical",
+  "signal_status": "no_signal",
+  "sample_ok": false
+}

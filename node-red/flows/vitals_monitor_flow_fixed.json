@@ -1,0 +1,760 @@
+[
+  {
+    "id": "aa00000000000001",
+    "type": "comment",
+    "z": "aa00000000000000",
+    "name": "Three-sensor vital demo",
+    "info": "MQTT or Inject -> Python JSON API -> dashboard and event log. All health-state labels are proxy or synthetic demo states only.",
+    "x": 450,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "aa00000000000000",
+    "type": "tab",
+    "label": "Vital Monitor Demo",
+    "disabled": false,
+    "info": "Sensor/data status is separate from prototype review state. See START_HERE.md. This flow is a software demonstration, not a diagnosis.",
+    "env": []
+  },
+  {
+    "id": "aa00000000000003",
+    "type": "mqtt-broker",
+    "name": "Local MQTT broker (edit if needed)",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthRetain": "false",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closeRetain": "false",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willRetain": "false",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "aa00000000000004",
+    "type": "mqtt in",
+    "z": "aa00000000000000",
+    "name": "Sensor/Wokwi readings",
+    "topic": "vitals/raw",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "aa00000000000003",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 170,
+    "y": 180,
+    "wires": [
+      [
+        "aa00000000000005"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000005",
+    "type": "function",
+    "z": "aa00000000000000",
+    "name": "Validate MQTT JSON contract",
+    "func": "let p = msg.payload;\nif (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { node.error('MQTT payload is not valid JSON', msg); return null; } }\nif (!p || typeof p !== 'object' || Array.isArray(p)) { node.error('MQTT payload must be a JSON object', msg); return null; }\nif (!p.mode) p.mode = 'physical';\nif (!p.timestamp || !p.device_id) { node.error('timestamp and device_id are required', msg); return null; }\n// Keep the physical contract to the three device readings; the API marks partial data.\nmsg.payload = p;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 430,
+    "y": 180,
+    "wires": [
+      [
+        "aa0000000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000006",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo: normal sample",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"bpm\": 80, \"spo2_pct\": 98.0, \"temp_c\": 36.8, \"signal_quality\": 0.9, \"contact_ok\": true, \"scenario\": \"normal_demo\"}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 290,
+    "wires": [
+      [
+        "aa0000000000000d"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000007",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo: attention branch",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"bpm\": 95, \"spo2_pct\": 96.0, \"temp_c\": 37.0, \"signal_quality\": 0.9, \"contact_ok\": true, \"scenario\": \"attention_demo\"}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 330,
+    "wires": [
+      [
+        "aa0000000000000d"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000008",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo: poor signal",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"bpm\": 80, \"spo2_pct\": 98.0, \"temp_c\": 36.8, \"signal_quality\": 0.05, \"contact_ok\": false}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 370,
+    "wires": [
+      [
+        "aa0000000000000d"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000009",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo: critical branch",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"bpm\": 100, \"spo2_pct\": 96.0, \"temp_c\": 37.0, \"signal_quality\": 0.9, \"contact_ok\": true, \"scenario\": \"critical_demo\"}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 410,
+    "wires": [
+      [
+        "aa0000000000000d"
+      ]
+    ]
+  },
+  {
+    "id": "aa0000000000000a",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo: emergency branch (scripted only)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"bpm\": 88, \"spo2_pct\": 98.0, \"temp_c\": 36.8, \"signal_quality\": 0.9, \"contact_ok\": true, \"scenario\": \"emergency_demo\"}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 450,
+    "wires": [
+      [
+        "aa0000000000000d"
+      ]
+    ]
+  },
+  {
+    "id": "aa0000000000000b",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo sequence: stable then no signal",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"case\": \"stable\"}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 490,
+    "wires": [
+      [
+        "aa0000000000000e"
+      ]
+    ]
+  },
+  {
+    "id": "aa0000000000000c",
+    "type": "inject",
+    "z": "aa00000000000000",
+    "name": "Demo sequence: rapid rise then no signal",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{\"case\": \"rapid\"}",
+    "payloadType": "json",
+    "x": 170,
+    "y": 530,
+    "wires": [
+      [
+        "aa0000000000000e"
+      ]
+    ]
+  },
+  {
+    "id": "aa0000000000000d",
+    "type": "function",
+    "z": "aa00000000000000",
+    "name": "Mark as simulated + timestamp",
+    "func": "let p = msg.payload || {};\nif (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { node.error('Demo payload is not valid JSON', msg); return null; } }\np.mode = 'simulated';\np.device_id = p.device_id || 'demo-pi';\np.timestamp = new Date().toISOString();\nmsg.payload = p;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 440,
+    "y": 380,
+    "wires": [
+      [
+        "aa0000000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "aa0000000000000e",
+    "type": "function",
+    "z": "aa00000000000000",
+    "name": "Replay ordered loss scenarios",
+    "func": "const kind = (msg.payload && msg.payload.case) || 'rapid';\nconst device = kind === 'stable' ? 'demo-stable-loss' : 'demo-rapid-loss';\nconst bpmValues = kind === 'stable' ? [79, 80, 81, 80, null] : [70, 78, 89, 103, null];\nlet i = 0;\nfunction sendNext() {\n    if (i >= bpmValues.length) { node.done(); return; }\n    const bpm = bpmValues[i++];\n    const p = { device_id: device, timestamp: new Date().toISOString(), mode: 'simulated' };\n    if (bpm === null) { p.signal_status = 'no_signal'; p.sample_ok = false; }\n    else { p.bpm = bpm; p.spo2_pct = 98.0; p.temp_c = 36.8; p.signal_quality = 0.9; p.contact_ok = true; }\n    node.send({ payload: p, topic: 'demo/vitals' });\n    setTimeout(sendNext, 650);\n}\nsendNext();\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 450,
+    "y": 510,
+    "wires": [
+      [
+        "aa0000000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "aa0000000000000f",
+    "type": "http request",
+    "z": "aa00000000000000",
+    "name": "Python anomaly/state API",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "http://127.0.0.1:8000/predict",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 720,
+    "y": 300,
+    "wires": [
+      [
+        "aa00000000000010"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000010",
+    "type": "function",
+    "z": "aa00000000000000",
+    "name": "Format dashboard, chart, and event log",
+    "func": "const r = msg.payload || {};\nconst estimate = r.risk_estimate || {};\nconst noise = r.noise_guard || {};\nconst rows = flow.get('vitalsEventRows') || [];\nrows.unshift({time:r.timestamp || '', device_id:r.device_id || '', sensor_status:r.sensor_status || '', review_state:r.review_state || '', trend:r.trend || '', estimate:estimate.label || 'Unavailable', score:estimate.high_risk_score == null ? '' : estimate.high_risk_score, noise_guard:noise.status || '', reason:r.reason || ''});\nif (rows.length > 20) rows.length = 20;\nflow.set('vitalsEventRows', rows);\nconst dashboard = RED.util.cloneMessage(msg);\ndashboard.payload.risk_estimate_display = estimate.available\n    ? estimate.label + ' | score: ' + estimate.high_risk_score + ' | ' + estimate.status\n    : 'Unavailable | ' + (estimate.reason || 'No valid sample');\ndashboard.payload.noise_display = (noise.status || 'not reported') + ' — ' + (noise.method || 'adaptive screen');\nconst raw = (r.input && r.input.raw) || {};\nif (r.sensor_status === 'Online' || r.sensor_status === 'Partial data') {\n    const show = (value, unit) => value == null ? 'Unavailable' : String(value) + unit;\n    dashboard.payload.readings_display = 'BPM: ' + show(raw.bpm, '') + ' | SpO2: ' + show(raw.spo2_pct, '%') + ' | Temp: ' + show(raw.temp_c, ' °C');\n} else if (r.sensor_status === 'Possible noise') {\n    dashboard.payload.readings_display = 'Reading withheld as possible noise';\n} else {\n    dashboard.payload.readings_display = 'Unavailable';\n}\nlet chart = RED.util.cloneMessage(msg);\nconst bpm = raw.bpm;\nconst chartableStatus = r.sensor_status === 'Online' || r.sensor_status === 'Partial data';\nif (chartableStatus && noise.status !== 'single_spike_withheld' && bpm != null && Number.isFinite(Number(bpm)) && r.timestamp) {\n    chart.topic = 'BPM';\n    chart.payload = {ts: Date.parse(r.timestamp), bpm: Number(bpm)};\n} else {\n    chart = null;\n}\nconst log = RED.util.cloneMessage(msg);\nlog.payload = JSON.stringify(r);\nconst table = RED.util.cloneMessage(msg);\ntable.payload = rows;\nconst telegram = RED.util.cloneMessage(msg);\nreturn [dashboard, chart, log, table, telegram];",
+    "outputs": 5,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 980,
+    "y": 300,
+    "wires": [
+      [
+        "aa00000000000011",
+        "aa00000000000050"
+      ],
+      [
+        "aa00000000000023"
+      ],
+      [
+        "aa00000000000012"
+      ],
+      [
+        "aa00000000000024"
+      ],
+      [
+        "aa00000000000026"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000011",
+    "type": "debug",
+    "z": "aa00000000000000",
+    "name": "Full AI JSON output",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1270,
+    "y": 470,
+    "wires": []
+  },
+  {
+    "id": "aa00000000000012",
+    "type": "file",
+    "z": "aa00000000000000",
+    "name": "Append JSONL history",
+    "filename": "./vitals_ai_history.jsonl",
+    "filenameType": "str",
+    "appendNewline": true,
+    "createDir": false,
+    "overwriteFile": "false",
+    "encoding": "utf8",
+    "x": 1270,
+    "y": 550,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "aa00000000000013",
+    "type": "comment",
+    "z": "aa00000000000000",
+    "name": "Three-sensor vital demo",
+    "info": "MQTT or Inject -> Python JSON API -> dashboard and event log. All health-state labels are proxy or synthetic demo states only.",
+    "x": 1520,
+    "y": 550,
+    "wires": []
+  },
+  {
+    "id": "aa00000000000014",
+    "type": "catch",
+    "z": "aa00000000000000",
+    "name": "Catch API failures",
+    "scope": [
+      "aa0000000000000f"
+    ],
+    "uncaught": false,
+    "x": 710,
+    "y": 640,
+    "wires": [
+      [
+        "aa00000000000015"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000015",
+    "type": "function",
+    "z": "aa00000000000000",
+    "name": "Show API unavailable",
+    "func": "const errorText = (msg.error && msg.error.message) || 'Python API is unavailable';\nmsg.payload = { sensor_status: 'API error', review_state: 'Unavailable', reason: errorText, recommended_action: 'Start vitals_ai.py serve and confirm the API URL/port.', risk_estimate: { available: false, status: 'unavailable', reason: errorText } };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 980,
+    "y": 640,
+    "wires": [
+      [
+        "aa0000000000001b",
+        "aa0000000000001c",
+        "aa0000000000001f",
+        "aa00000000000020",
+        "aa00000000000011"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000026",
+    "type": "function",
+    "z": "aa00000000000000",
+    "name": "Prepare test-only Telegram state-change alert",
+    "func": "const r = msg.payload || {};\nconst token = String(env.get('VITALS_TELEGRAM_BOT_TOKEN') || '').trim();\nconst chatId = String(env.get('VITALS_TELEGRAM_CHAT_ID') || '').trim();\nconst deviceId = String(r.device_id || '');\nif (!token || !chatId || r.mode !== 'simulated' || !deviceId.startsWith('demo-')) return null;\nconst reviewState = String(r.review_state || '');\nconst sensorStatus = String(r.sensor_status || '');\nconst eligible = reviewState.startsWith('Attention') || ['Possible noise','Poor signal','No signal','Stale','Partial data'].includes(sensorStatus);\nconst states = flow.get('telegramDemoStates') || {};\nconst prior = states[deviceId] || {};\nconst stateKey = sensorStatus + '|' + reviewState;\nconst changed = prior.currentState !== stateKey;\nprior.currentState = stateKey;\nconst now = Date.now();\nif (!eligible || !changed || (prior.lastSentAt && now - prior.lastSentAt < 60000)) { states[deviceId] = prior; flow.set('telegramDemoStates', states); return null; }\nprior.lastSentAt = now;\nstates[deviceId] = prior;\nflow.set('telegramDemoStates', states);\nmsg.url = 'https://api.telegram.org/bot' + token + '/sendMessage';\nmsg.headers = {'Content-Type':'application/json'};\nmsg.payload = {chat_id:chatId, text:['VITALS PROJECT TEST ALERT','Device: ' + deviceId,'Sensor/data: ' + sensorStatus,'Prototype state: ' + reviewState,'Reason: ' + String(r.reason || '').slice(0,180),'Action: ' + String(r.recommended_action || '').slice(0,180),'Time: ' + String(r.timestamp || ''),'Synthetic demo only. Not a diagnosis or emergency-services alert.'].join('\\n')};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1280,
+    "y": 680,
+    "wires": [
+      [
+        "aa00000000000027"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000027",
+    "type": "http request",
+    "z": "aa00000000000000",
+    "name": "Telegram Bot API (test chat)",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 1560,
+    "y": 680,
+    "wires": [
+      [
+        "aa00000000000029"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000029",
+    "type": "debug",
+    "z": "aa00000000000000",
+    "name": "Telegram delivery result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1800,
+    "y": 680,
+    "wires": []
+  },
+  {
+    "id": "aa0000000000002a",
+    "type": "catch",
+    "z": "aa00000000000000",
+    "name": "Catch Telegram delivery failures",
+    "scope": [
+      "aa00000000000027"
+    ],
+    "uncaught": false,
+    "x": 1560,
+    "y": 760,
+    "wires": [
+      [
+        "aa00000000000029"
+      ]
+    ]
+  },
+  {
+    "id": "aa00000000000028",
+    "type": "comment",
+    "z": "aa00000000000000",
+    "name": "Three-sensor vital demo",
+    "info": "MQTT or Inject -> Python JSON API -> dashboard and event log. All health-state labels are proxy or synthetic demo states only.",
+    "x": 1280,
+    "y": 760,
+    "wires": []
+  },
+  {
+    "id": "aa00000000000016",
+    "type": "ui-base",
+    "name": "Vital Monitor Dashboard",
+    "path": "/dashboard",
+    "appIcon": "",
+    "includeClientData": false,
+    "acceptsClientConfig": [
+      "ui-control",
+      "ui-notification"
+    ],
+    "showPathInSidebar": false,
+    "headerContent": "page",
+    "titleBarStyle": "default",
+    "showReconnectNotification": true,
+    "notificationDisplayTime": 2,
+    "showDisconnectNotification": true,
+    "allowInstall": true
+  },
+  {
+    "id": "aa00000000000017",
+    "type": "ui-theme",
+    "name": "Vital demo green",
+    "colors": {
+      "surface": "#ffffff",
+      "primary": "#116b55",
+      "bgPage": "#edf4f1",
+      "groupBg": "#ffffff",
+      "groupOutline": "#c8d9d2"
+    },
+    "sizes": {
+      "density": "default",
+      "pagePadding": "16px",
+      "groupGap": "12px",
+      "groupBorderRadius": "8px",
+      "widgetGap": "10px"
+    }
+  },
+  {
+    "id": "aa00000000000018",
+    "type": "ui-page",
+    "name": "Live Monitor",
+    "ui": "aa00000000000016",
+    "path": "/vitals",
+    "icon": "monitor_heart",
+    "layout": "grid",
+    "theme": "aa00000000000017",
+    "order": 1,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ]
+  },
+  {
+    "id": "aa00000000000019",
+    "type": "ui-group",
+    "name": "Current status and AI review",
+    "page": "aa00000000000018",
+    "width": "12",
+    "height": "1",
+    "order": 1,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "aa0000000000001a",
+    "type": "ui-group",
+    "name": "Trend and recent events",
+    "page": "aa00000000000018",
+    "width": "12",
+    "height": "1",
+    "order": 2,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "aa00000000000023",
+    "type": "ui-chart",
+    "z": "aa00000000000000",
+    "group": "aa0000000000001a",
+    "name": "Recent BPM trend",
+    "label": "Heart rate (BPM) - last 60 points",
+    "order": 1,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "Time",
+    "xAxisProperty": "ts",
+    "xAxisPropertyType": "property",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "BPM",
+    "yAxisProperty": "bpm",
+    "yAxisPropertyType": "property",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "circle",
+    "pointRadius": 3,
+    "showLegend": false,
+    "removeOlder": "60",
+    "removeOlderUnit": "1",
+    "removeOlderPoints": "60",
+    "colors": [
+      "#116b55",
+      "#ff0000",
+      "#ff7f0e",
+      "#2ca02c",
+      "#a347e1",
+      "#d62728",
+      "#ff9896",
+      "#9467bd",
+      "#c5b0d5"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": "12",
+    "height": "6",
+    "className": "",
+    "interpolation": "linear",
+    "x": 1510,
+    "y": 440,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "aa00000000000024",
+    "type": "ui-table",
+    "z": "aa00000000000000",
+    "group": "aa0000000000001a",
+    "name": "Recent AI events",
+    "label": "Recent events (latest 20)",
+    "order": 2,
+    "width": "12",
+    "height": "6",
+    "maxrows": 20,
+    "passthru": false,
+    "autocols": true,
+    "showSearch": true,
+    "deselect": true,
+    "selectionType": "none",
+    "columns": [],
+    "mobileBreakpoint": "sm",
+    "mobileBreakpointType": "defaults",
+    "action": "replace",
+    "className": "",
+    "x": 1510,
+    "y": 500,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "aa00000000000025",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@flowfuse/node-red-dashboard": "1.30.2"
+    }
+  },
+  {
+    "id": "aa00000000000050",
+    "type": "ui-template",
+    "z": "aa00000000000000",
+    "group": "aa00000000000019",
+    "page": "",
+    "ui": "",
+    "name": "Current status panel",
+    "order": 1,
+    "width": "12",
+    "height": "0",
+    "head": "",
+    "format": "<template>\n<div>\n<div class=\"r\"><span>Sensor / data status</span><b>{{ msg?.payload?.sensor_status }}</b></div>\n<div class=\"r\"><span>Prototype review state</span><b>{{ msg?.payload?.review_state }}</b></div>\n<div class=\"r\"><span>BPM / SpO2 / temperature</span><b>{{ msg?.payload?.readings_display }}</b></div>\n<div class=\"r\"><span>Short trend / BPM change</span><b>{{ msg?.payload?.trend }} | {{ msg?.payload?.bpm_delta }} bpm</b></div>\n<div class=\"r\"><span>Last valid timestamp</span><b>{{ msg?.payload?.last_valid_timestamp }}</b></div>\n<div class=\"r\"><span>Dataset-label score (not clinical probability)</span><b>{{ msg?.payload?.risk_estimate?.high_risk_score }} | {{ msg?.payload?.model_version }}</b></div>\n<div class=\"r\"><span>Dataset label estimate (not diagnosis)</span><b>{{ msg?.payload?.risk_estimate_display }}</b></div>\n<div class=\"r\"><span>Reason</span><b>{{ msg?.payload?.reason }}</b></div>\n<div class=\"r\"><span>Recommended next action</span><b>{{ msg?.payload?.recommended_action }}</b></div>\n<div class=\"r\"><span>Noise / missing-input handling</span><b>{{ msg?.payload?.noise_display }}</b></div>\n</div>\n</template>\n<style>\n.r{display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px solid #ddd}\n.r span{color:#555}\n.r b{text-align:right;font-weight:600}\n</style>",
+    "storeOutMessages": true,
+    "passthru": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 1510,
+    "y": 100,
+    "wires": [
+      []
+    ]
+  }
+]

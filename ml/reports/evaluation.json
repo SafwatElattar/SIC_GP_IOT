@@ -1,0 +1,536 @@
+{
+  "model_version": "three-sensor-proxy-v1.0.0",
+  "dataset_file": "human_vital_signs_dataset_2024.zip",
+  "dataset_sha256": "b017e69424e98795bc670ecbc795ec4f700235713ddfc403c52a273797ebe891",
+  "features": [
+    "bpm",
+    "spo2_pct",
+    "temp_c"
+  ],
+  "target": "Risk Category; a dataset proxy label, not clinical ground truth.",
+  "split": {
+    "method": "Chronological holdout after sorting by Timestamp",
+    "train_fraction": 0.6,
+    "validation_fraction": 0.2,
+    "test_fraction": 0.2,
+    "train_rows": 120012,
+    "validation_rows": 40004,
+    "test_rows": 40004,
+    "saved_deployment_models_refit_on": "train + validation (first 80%) after final test metrics are computed",
+    "patient_independent_split": true
+  },
+  "dataset": {
+    "rows_read": 200020,
+    "rows_used": 200020,
+    "rows_dropped": 0,
+    "class_counts": {
+      "Low Risk (proxy)": 94905,
+      "High Risk (proxy)": 105115
+    },
+    "time_start_utc": "2024-03-03T00:14:46.246950+00:00",
+    "time_end_utc": "2024-07-19T21:53:45.729841+00:00",
+    "unique_patient_ids": 200020
+  },
+  "model_selection": {
+    "selected_model": "random_forest",
+    "selection_metric": "highest validation balanced accuracy; test data not used for selection",
+    "candidates_validation": {
+      "logistic": {
+        "accuracy": 0.638161,
+        "balanced_accuracy": 0.638495,
+        "precision_high_proxy": 0.663988,
+        "recall_high_proxy": 0.632092,
+        "f1_high_proxy": 0.647647,
+        "confusion_matrix_labels_low_high": [
+          [
+            12226,
+            6732
+          ],
+          [
+            7743,
+            13303
+          ]
+        ]
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.699005,
+        "balanced_accuracy": 0.713876,
+        "precision_high_proxy": 0.997459,
+        "recall_high_proxy": 0.428965,
+        "f1_high_proxy": 0.599927,
+        "confusion_matrix_labels_low_high": [
+          [
+            18935,
+            23
+          ],
+          [
+            12018,
+            9028
+          ]
+        ]
+      },
+      "random_forest": {
+        "accuracy": 0.699155,
+        "balanced_accuracy": 0.714073,
+        "precision_high_proxy": 0.999778,
+        "recall_high_proxy": 0.428252,
+        "f1_high_proxy": 0.599647,
+        "confusion_matrix_labels_low_high": [
+          [
+            18956,
+            2
+          ],
+          [
+            12033,
+            9013
+          ]
+        ]
+      },
+      "extra_trees": {
+        "accuracy": 0.691681,
+        "balanced_accuracy": 0.704861,
+        "precision_high_proxy": 0.921766,
+        "recall_high_proxy": 0.452342,
+        "f1_high_proxy": 0.606872,
+        "confusion_matrix_labels_low_high": [
+          [
+            18150,
+            808
+          ],
+          [
+            11526,
+            9520
+          ]
+        ]
+      }
+    },
+    "validation": {
+      "accuracy": 0.699155,
+      "balanced_accuracy": 0.714073,
+      "precision_high_proxy": 0.999778,
+      "recall_high_proxy": 0.428252,
+      "f1_high_proxy": 0.599647,
+      "confusion_matrix_labels_low_high": [
+        [
+          18956,
+          2
+        ],
+        [
+          12033,
+          9013
+        ]
+      ]
+    },
+    "test": {
+      "accuracy": 0.70153,
+      "balanced_accuracy": 0.716177,
+      "precision_high_proxy": 0.999013,
+      "recall_high_proxy": 0.432829,
+      "f1_high_proxy": 0.60398,
+      "confusion_matrix_labels_low_high": [
+        [
+          18959,
+          9
+        ],
+        [
+          11931,
+          9105
+        ]
+      ]
+    }
+  },
+  "two_sensor_models_for_one_missing_field": {
+    "bpm|spo2_pct": {
+      "features": [
+        "bpm",
+        "spo2_pct"
+      ],
+      "selected_model": "random_forest",
+      "selection_metric": "highest validation balanced accuracy; test data not used for selection",
+      "candidates_validation": {
+        "logistic": {
+          "accuracy": 0.638161,
+          "balanced_accuracy": 0.638495,
+          "precision_high_proxy": 0.663988,
+          "recall_high_proxy": 0.632092,
+          "f1_high_proxy": 0.647647,
+          "confusion_matrix_labels_low_high": [
+            [
+              12226,
+              6732
+            ],
+            [
+              7743,
+              13303
+            ]
+          ]
+        },
+        "hist_gradient_boosting": {
+          "accuracy": 0.69913,
+          "balanced_accuracy": 0.714024,
+          "precision_high_proxy": 0.998672,
+          "recall_high_proxy": 0.42868,
+          "f1_high_proxy": 0.599867,
+          "confusion_matrix_labels_low_high": [
+            [
+              18946,
+              12
+            ],
+            [
+              12024,
+              9022
+            ]
+          ]
+        },
+        "random_forest": {
+          "accuracy": 0.69918,
+          "balanced_accuracy": 0.714087,
+          "precision_high_proxy": 0.999335,
+          "recall_high_proxy": 0.42849,
+          "f1_high_proxy": 0.5998,
+          "confusion_matrix_labels_low_high": [
+            [
+              18952,
+              6
+            ],
+            [
+              12028,
+              9018
+            ]
+          ]
+        },
+        "extra_trees": {
+          "accuracy": 0.697855,
+          "balanced_accuracy": 0.712521,
+          "precision_high_proxy": 0.986638,
+          "recall_high_proxy": 0.431531,
+          "f1_high_proxy": 0.600443,
+          "confusion_matrix_labels_low_high": [
+            [
+              18835,
+              123
+            ],
+            [
+              11964,
+              9082
+            ]
+          ]
+        }
+      },
+      "validation": {
+        "accuracy": 0.69918,
+        "balanced_accuracy": 0.714087,
+        "precision_high_proxy": 0.999335,
+        "recall_high_proxy": 0.42849,
+        "f1_high_proxy": 0.5998,
+        "confusion_matrix_labels_low_high": [
+          [
+            18952,
+            6
+          ],
+          [
+            12028,
+            9018
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.701705,
+        "balanced_accuracy": 0.716357,
+        "precision_high_proxy": 0.999561,
+        "recall_high_proxy": 0.432925,
+        "f1_high_proxy": 0.604173,
+        "confusion_matrix_labels_low_high": [
+          [
+            18964,
+            4
+          ],
+          [
+            11929,
+            9107
+          ]
+        ]
+      }
+    },
+    "bpm|temp_c": {
+      "features": [
+        "bpm",
+        "temp_c"
+      ],
+      "selected_model": "random_forest",
+      "selection_metric": "highest validation balanced accuracy; test data not used for selection",
+      "candidates_validation": {
+        "logistic": {
+          "accuracy": 0.638161,
+          "balanced_accuracy": 0.638495,
+          "precision_high_proxy": 0.663988,
+          "recall_high_proxy": 0.632092,
+          "f1_high_proxy": 0.647647,
+          "confusion_matrix_labels_low_high": [
+            [
+              12226,
+              6732
+            ],
+            [
+              7743,
+              13303
+            ]
+          ]
+        },
+        "hist_gradient_boosting": {
+          "accuracy": 0.69893,
+          "balanced_accuracy": 0.713828,
+          "precision_high_proxy": 0.99845,
+          "recall_high_proxy": 0.428395,
+          "f1_high_proxy": 0.599548,
+          "confusion_matrix_labels_low_high": [
+            [
+              18944,
+              14
+            ],
+            [
+              12030,
+              9016
+            ]
+          ]
+        },
+        "random_forest": {
+          "accuracy": 0.69923,
+          "balanced_accuracy": 0.714145,
+          "precision_high_proxy": 0.999778,
+          "recall_high_proxy": 0.428395,
+          "f1_high_proxy": 0.599787,
+          "confusion_matrix_labels_low_high": [
+            [
+              18956,
+              2
+            ],
+            [
+              12030,
+              9016
+            ]
+          ]
+        },
+        "extra_trees": {
+          "accuracy": 0.697805,
+          "balanced_accuracy": 0.712518,
+          "precision_high_proxy": 0.988439,
+          "recall_high_proxy": 0.430628,
+          "f1_high_proxy": 0.599901,
+          "confusion_matrix_labels_low_high": [
+            [
+              18852,
+              106
+            ],
+            [
+              11983,
+              9063
+            ]
+          ]
+        }
+      },
+      "validation": {
+        "accuracy": 0.69923,
+        "balanced_accuracy": 0.714145,
+        "precision_high_proxy": 0.999778,
+        "recall_high_proxy": 0.428395,
+        "f1_high_proxy": 0.599787,
+        "confusion_matrix_labels_low_high": [
+          [
+            18956,
+            2
+          ],
+          [
+            12030,
+            9016
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.70158,
+        "balanced_accuracy": 0.716228,
+        "precision_high_proxy": 0.999122,
+        "recall_high_proxy": 0.432877,
+        "f1_high_proxy": 0.604046,
+        "confusion_matrix_labels_low_high": [
+          [
+            18960,
+            8
+          ],
+          [
+            11930,
+            9106
+          ]
+        ]
+      }
+    },
+    "spo2_pct|temp_c": {
+      "features": [
+        "spo2_pct",
+        "temp_c"
+      ],
+      "selected_model": "random_forest",
+      "selection_metric": "highest validation balanced accuracy; test data not used for selection",
+      "candidates_validation": {
+        "logistic": {
+          "accuracy": 0.50155,
+          "balanced_accuracy": 0.501695,
+          "precision_high_proxy": 0.527797,
+          "recall_high_proxy": 0.498907,
+          "f1_high_proxy": 0.512946,
+          "confusion_matrix_labels_low_high": [
+            [
+              9564,
+              9394
+            ],
+            [
+              10546,
+              10500
+            ]
+          ]
+        },
+        "hist_gradient_boosting": {
+          "accuracy": 0.526072,
+          "balanced_accuracy": 0.500201,
+          "precision_high_proxy": 0.526198,
+          "recall_high_proxy": 0.995866,
+          "f1_high_proxy": 0.688569,
+          "confusion_matrix_labels_low_high": [
+            [
+              86,
+              18872
+            ],
+            [
+              87,
+              20959
+            ]
+          ]
+        },
+        "random_forest": {
+          "accuracy": 0.502575,
+          "balanced_accuracy": 0.502193,
+          "precision_high_proxy": 0.528253,
+          "recall_high_proxy": 0.509503,
+          "f1_high_proxy": 0.518708,
+          "confusion_matrix_labels_low_high": [
+            [
+              9382,
+              9576
+            ],
+            [
+              10323,
+              10723
+            ]
+          ]
+        },
+        "extra_trees": {
+          "accuracy": 0.501325,
+          "balanced_accuracy": 0.50161,
+          "precision_high_proxy": 0.52772,
+          "recall_high_proxy": 0.496151,
+          "f1_high_proxy": 0.511449,
+          "confusion_matrix_labels_low_high": [
+            [
+              9613,
+              9345
+            ],
+            [
+              10604,
+              10442
+            ]
+          ]
+        }
+      },
+      "validation": {
+        "accuracy": 0.502575,
+        "balanced_accuracy": 0.502193,
+        "precision_high_proxy": 0.528253,
+        "recall_high_proxy": 0.509503,
+        "f1_high_proxy": 0.518708,
+        "confusion_matrix_labels_low_high": [
+          [
+            9382,
+            9576
+          ],
+          [
+            10323,
+            10723
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.4972,
+        "balanced_accuracy": 0.496506,
+        "precision_high_proxy": 0.522453,
+        "recall_high_proxy": 0.509935,
+        "f1_high_proxy": 0.516118,
+        "confusion_matrix_labels_low_high": [
+          [
+            9163,
+            9805
+          ],
+          [
+            10309,
+            10727
+          ]
+        ]
+      }
+    }
+  },
+  "bpm_only_baseline": {
+    "threshold_selected_on_validation": 90.5,
+    "validation": {
+      "accuracy": 0.699155,
+      "balanced_accuracy": 0.714079,
+      "precision_high_proxy": 1.0,
+      "recall_high_proxy": 0.428157,
+      "f1_high_proxy": 0.599594,
+      "confusion_matrix_labels_low_high": [
+        [
+          18958,
+          0
+        ],
+        [
+          12035,
+          9011
+        ]
+      ]
+    },
+    "test": {
+      "accuracy": 0.701705,
+      "balanced_accuracy": 0.716367,
+      "precision_high_proxy": 1.0,
+      "recall_high_proxy": 0.432734,
+      "f1_high_proxy": 0.604068,
+      "confusion_matrix_labels_low_high": [
+        [
+          18968,
+          0
+        ],
+        [
+          11933,
+          9103
+        ]
+      ]
+    }
+  },
+  "simple_baseline_comparison": {
+    "description": "One BPM threshold selected on validation balanced accuracy; used only as a transparent comparator.",
+    "validation_balanced_accuracy_difference_rf_minus_bpm_baseline": -6e-06,
+    "test_accuracy_difference_rf_minus_bpm_baseline": -0.000175,
+    "interpretation": "A near-zero difference means the three-feature classifier did not demonstrate a meaningful improvement over this simple baseline on this dataset split."
+  },
+  "dataset_target_rule_audit": {
+    "available": true,
+    "rule": "High Risk if any published threshold is met: HR, respiratory rate, temperature, SpO2, BP, or BMI outside listed bounds.",
+    "accuracy_against_dataset_label": 1.0,
+    "disagreements": 0,
+    "warning": "This rule reproduces the dataset label definition; it is not a clinical validation."
+  },
+  "limitations": [
+    "Metrics show agreement with the source Risk Category column only, not patient-condition accuracy.",
+    "The source contains one row per unique patient ID, so it does not validate repeated-reading trend or noise behavior.",
+    "An independent, representative, clinically labelled dataset is required to evaluate real-world performance.",
+    "The online rolling filter is an engineering noise screen; without waveform/contact ground truth it cannot prove whether a sustained change is a patient change or a sensor fault."
+  ]
+}

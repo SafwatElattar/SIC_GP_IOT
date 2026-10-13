@@ -1,0 +1,92 @@
+{
+  "kind": "synthetic_branch_checks_not_accuracy_or_clinical_validation",
+  "passed": 15,
+  "total": 15,
+  "all_expected": true,
+  "cases": [
+    {
+      "case": "one missing SpO2 field",
+      "expected": "provisional estimate from BPM + temperature model",
+      "observed": "partial_inputs",
+      "sensor_status": "Partial data"
+    },
+    {
+      "case": "BPM missing",
+      "expected": "estimate withheld when the remaining pair is near chance",
+      "observed": "unavailable",
+      "reason": "The available pair (spo2_pct, temp_c) was near chance on validation (balanced accuracy 50.2%); the estimate is withheld."
+    },
+    {
+      "case": "no signal",
+      "expected": "No signal",
+      "observed": "No signal",
+      "score": null
+    },
+    {
+      "case": "poor contact",
+      "expected": "Poor signal",
+      "observed": "Poor signal"
+    },
+    {
+      "case": "one isolated BPM spike",
+      "expected": "withheld as possible noise",
+      "observed": "single_spike_withheld",
+      "sensor_status": "Possible noise",
+      "score": null
+    },
+    {
+      "case": "return to prior reading",
+      "expected": "spike cleared",
+      "observed": "isolated_spike_cleared",
+      "sensor_status": "Online"
+    },
+    {
+      "case": "repeated unusual shift",
+      "expected": "review persistent change",
+      "observed": "repeated_change_review",
+      "review_state": "Attention: repeated change"
+    },
+    {
+      "case": "follow-up after confirmed shift",
+      "expected": "accept and adapt to the repeated change",
+      "observed": "persistent_change_accepted"
+    },
+    {
+      "case": "stale reading",
+      "expected": "Stale",
+      "observed": "Stale"
+    },
+    {
+      "case": "no signal after rapid rise",
+      "expected": "retain critical trend before signal loss",
+      "observed": "Critical trend before signal loss (demo)",
+      "sensor_status": "No signal"
+    },
+    {
+      "case": "no signal after stable readings",
+      "expected": "sensor unavailable without critical trend",
+      "observed": "Sensor/data unavailable",
+      "sensor_status": "No signal"
+    },
+    {
+      "case": "normal_demo",
+      "expected": "Normal / stable (scripted demo)",
+      "observed": "Normal / stable (scripted demo)"
+    },
+    {
+      "case": "attention_demo",
+      "expected": "Attention (scripted demo)",
+      "observed": "Attention (scripted demo)"
+    },
+    {
+      "case": "critical_demo",
+      "expected": "Critical (scripted demo)",
+      "observed": "Critical (scripted demo)"
+    },
+    {
+      "case": "emergency_demo",
+      "expected": "Emergency (scripted demo)",
+      "observed": "Emergency (scripted demo)"
+    }
+  ]
+}

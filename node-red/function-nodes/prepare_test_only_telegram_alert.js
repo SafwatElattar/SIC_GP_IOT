@@ -1,0 +1,22 @@
+const r = msg.payload || {};
+const token = String(env.get('VITALS_TELEGRAM_BOT_TOKEN') || '').trim();
+const chatId = String(env.get('VITALS_TELEGRAM_CHAT_ID') || '').trim();
+const deviceId = String(r.device_id || '');
+if (!token || !chatId || r.mode !== 'simulated' || !deviceId.startsWith('demo-')) return null;
+const reviewState = String(r.review_state || '');
+const sensorStatus = String(r.sensor_status || '');
+const eligible = reviewState.startsWith('Attention') || ['Possible noise','Poor signal','No signal','Stale','Partial data'].includes(sensorStatus);
+const states = flow.get('telegramDemoStates') || {};
+const prior = states[deviceId] || {};
+const stateKey = sensorStatus + '|' + reviewState;
+const changed = prior.currentState !== stateKey;
+prior.currentState = stateKey;
+const now = Date.now();
+if (!eligible || !changed || (prior.lastSentAt && now - prior.lastSentAt < 60000)) { states[deviceId] = prior; flow.set('telegramDemoStates', states); return null; }
+prior.lastSentAt = now;
+states[deviceId] = prior;
+flow.set('telegramDemoStates', states);
+msg.url = 'https://api.telegram.org/bot' + token + '/sendMessage';
+msg.headers = {'Content-Type':'application/json'};
+msg.payload = {chat_id:chatId, text:['VITALS PROJECT TEST ALERT','Device: ' + deviceId,'Sensor/data: ' + sensorStatus,'Prototype state: ' + reviewState,'Reason: ' + String(r.reason || '').slice(0,180),'Action: ' + String(r.recommended_action || '').slice(0,180),'Time: ' + String(r.timestamp || ''),'Synthetic demo only. Not a diagnosis or emergency-services alert.'].join('\n')};
+return msg;

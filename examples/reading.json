@@ -1,0 +1,10 @@
+{
+  "device_id": "pi-01",
+  "timestamp": "REPLACE_WITH_CURRENT_UTC_ISO8601",
+  "mode": "physical",
+  "bpm": 80,
+  "spo2_pct": 98.2,
+  "temp_c": 36.8,
+  "signal_quality": 0.9,
+  "contact_ok": true
+}
