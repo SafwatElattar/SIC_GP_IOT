@@ -1665,3 +1665,30 @@ function startApp() {
 }
 const savedUser = users.find(u => u.id === sessionStorage.getItem('pc_session'));
 if (savedUser) { session = savedUser; startApp(); } else showLogin();
+
+function connectMQTT() {
+  const client = new Paho.Client("broker.hivemq.com", 8884, "web_" + Math.random().toString(16).substr(2, 8));
+  client.onMessageArrived = (message) => {
+    try {
+      const raw = JSON.parse(message.payloadString);
+      // Feeds the reading directly into PulseCare's telemetry pipeline
+      state.deviceRaw = raw;
+      feedDevice(true);
+      scheduleRender();
+    } catch (err) {
+      console.error("MQTT parsing error:", err);
+    }
+  };
+  client.connect({
+    useSSL: true,
+    onSuccess: () => {
+      console.log("MQTT connected over WSS");
+      client.subscribe("pulsecare/iot/current");
+    },
+    onFailure: (e) => {
+      console.warn("MQTT WSS connection failed, retrying...", e);
+      setTimeout(connectMQTT, 4000);
+    }
+  });
+}
+connectMQTT();
